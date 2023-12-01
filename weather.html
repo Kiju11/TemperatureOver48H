@@ -1,0 +1,113 @@
+<!DOCTYPE HTML>
+<html>
+<head>        
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" charset="utf-8">
+        <script src="https://cdn.maptiler.com/maplibre-gl-js/v2.4.0/maplibre-gl.js"></script>
+          <link href="https://cdn.maptiler.com/maplibre-gl-js/v2.4.0/maplibre-gl.css" rel="stylesheet" />
+          <style>
+            body {
+              margin: 0;
+              padding: 0;
+            }
+            #map {
+              position: absolute;
+              top: 50%;
+              bottom: 0;
+              width: 100%;
+              height: 50%;
+            }
+          </style>
+        </head>
+        <script>
+           chart=0;
+           dataPoints=[];
+            window.onload = function (){ 
+            var chart = new CanvasJS.Chart("chartContainer", {
+                title: {
+                    text: "Temperature over the next 48 hours"
+                },
+                axisY: {
+                    title: "Temperature in °C"
+                },
+                data: [{
+                    type: "line",
+                    dataPoints: dataPoints
+                }]
+            });
+            chart.render();
+       
+        map.on('click', async (e) => {
+              const results = await queryForPlaces(e.lngLat);
+                    co=results[Object.keys(results)[2]];
+                    console.log(co);
+                    var da = new FormData();
+                da.append( "a", JSON.stringify( co ) );
+              fetch(backendServerADD, {
+                method: 'POST',
+                body:  da
+              })
+                .then((res) =>{
+                return res.json();
+                }).then( data=>{
+                    console.log(data);
+                document.getElementById("pic").innerHTML="<img src="+data[Object.keys(data)[1]]+">";
+                document.getElementById("txt").innerHTML=data[Object.keys(data)[2]];
+                
+                data[Object.keys(data)[0]].forEach(element => {
+                    dataPoints.shift();
+                });
+                data[Object.keys(data)[0]].forEach(element => {
+                    dataPoints.push(element);
+                });
+                chart.render();
+                });
+            });
+                 const queryForPlaces = async (lngLat) => {
+              const response = await fetch(`https://api.maptiler.com/geocoding/${lngLat.lng},${lngLat.lat}.json?key=${key}`);
+              const data = await response.json();
+              return data;
+                }        
+    }
+            </script>
+            <meta http-equiv="X-UA-Compatible" content="IE=edge">
+            <script src="https://cdn.maptiler.com/maplibre-gl-js/v2.4.0/maplibre-gl.js"></script>
+              <link href="https://cdn.maptiler.com/maplibre-gl-js/v2.4.0/maplibre-gl.css" rel="stylesheet" />
+              <style>
+                body {
+                  margin: 0;
+                  padding: 0;
+                }
+                #map {
+                  position: absolute;
+                  top: 50%;
+                  bottom: 0;
+                  width: 100%;
+                  height: 50%;
+                }
+              </style>
+          
+            </head>
+            <body>
+                <table align='center' style='margin: 0px auto;'><tr><td align="center" id="pic" ><img src='http://openweathermap.org/img/wn/01d@2x.png'></td><td></td></tr>
+                <tr style='text-align:center'><td style='text-align:center' id="txt"></td></tr></table>
+            <div id="map"></div>
+              <script>
+			  //https://api.maptiler.com key
+                  const key = '';
+				  const backendServerADD ='http://localhost/3ahit/weather_api.php';
+                  const map = new maplibregl.Map({
+                    container: 'map', // container id
+                    style: `https://api.maptiler.com/maps/streets-v2/style.json?key=${key}`, // style URL
+                    center: [16.62662018, 49.2125578], // starting position [lng, lat]
+                    zoom: 1, // starting zoom
+                  });
+                  map.addControl(new maplibregl.NavigationControl(), 'top-right');
+              </script>
+              <script>
+               
+            </script>
+            <div id="chartContainer" style="height: 370px; width: 100%;"></div>
+            <script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+            </body>
+            </html>  
+   
